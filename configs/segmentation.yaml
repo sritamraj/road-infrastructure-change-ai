@@ -1,0 +1,23 @@
+seed: 42
+
+data:
+  image_dir: data/raw/deepglobe/train/images
+  mask_dir: data/raw/deepglobe/train/masks
+  split_dir: data/splits/deepglobe
+  train_split: train_500.txt
+  val_split: val_100.txt
+  image_size: 256
+
+training:
+  model: unet
+  epochs: 2
+  batch_size: 2
+  num_workers: 0
+  lr: 0.0001
+  weight_decay: 0.00001
+  threshold: 0.5
+
+outputs:
+  checkpoint_dir: outputs/checkpoints
+  prediction_dir: outputs/predictions
+  metrics_dir: outputs/metrics
