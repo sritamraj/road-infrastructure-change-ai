@@ -193,9 +193,9 @@ The predicted road mask is processed using:
 
 Example for sample `142436`:
 
-* Skeleton pixels: 664
-* Line features: 4
-* Total network length: 799.99 pixels
+* Skeleton pixels: 813
+* Line features: 3
+* Total network length: 880.73 pixels
 
 ### GIS Limitation
 
