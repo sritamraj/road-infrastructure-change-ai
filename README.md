@@ -1,3 +1,5 @@
+[![CI](https://github.com/sritamraj/road-infrastructure-change-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/sritamraj/road-infrastructure-change-ai/actions/workflows/ci.yml)
+
 # Road Network Extraction & Infrastructure Change Detection Using Multi-Temporal Satellite Imagery
 
 ## Project Overview
