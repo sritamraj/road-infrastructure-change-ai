@@ -1,5 +1,6 @@
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import torch
@@ -7,11 +8,19 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from .dataset import RoadDataset
-from .models import build_model
-from .losses import DiceBCELoss
-from ..data.common import load_yaml, seed_everything
-from ..evaluation.metrics import binary_metrics
+try:
+    from .dataset import RoadDataset
+    from .models import build_model
+    from .losses import DiceBCELoss
+    from ..data.common import load_yaml, seed_everything
+    from ..evaluation.metrics import binary_metrics
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from src.segmentation.dataset import RoadDataset
+    from src.segmentation.models import build_model
+    from src.segmentation.losses import DiceBCELoss
+    from src.data.common import load_yaml, seed_everything
+    from src.evaluation.metrics import binary_metrics
 
 
 def run(model, loader, device, criterion, optimizer=None):
