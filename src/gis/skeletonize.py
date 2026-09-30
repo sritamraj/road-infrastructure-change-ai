@@ -4,8 +4,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 from skimage.morphology import (
-    binary_closing,
-    binary_opening,
+    closing,
+    opening,
     disk,
     remove_small_objects,
     skeletonize,
@@ -51,17 +51,17 @@ def main():
 
     cleaned = remove_small_objects(
         mask,
-        min_size=args.min_size,
+        max_size=max(args.min_size - 1, 0),
     )
 
     footprint = disk(args.radius)
 
-    cleaned = binary_opening(
+    cleaned = opening(
         cleaned,
         footprint,
     )
 
-    cleaned = binary_closing(
+    cleaned = closing(
         cleaned,
         footprint,
     )

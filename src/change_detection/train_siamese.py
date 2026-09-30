@@ -1,3 +1,4 @@
+import argparse
 import json
 import time
 from pathlib import Path
@@ -213,6 +214,9 @@ def run_epoch(
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Train the Siamese change detection model.")
+    parser.parse_args()
+
 
     torch.manual_seed(42)
 
