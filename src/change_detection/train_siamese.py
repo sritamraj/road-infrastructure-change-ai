@@ -1,11 +1,14 @@
 import argparse
 import json
+import sys
 import time
 from pathlib import Path
 
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.change_detection.dataset import LEVIRChangeDataset
 from src.change_detection.models import SiameseChangeNet
