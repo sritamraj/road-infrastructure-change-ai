@@ -12,6 +12,30 @@ The pipeline combines deep-learning road segmentation, road-network extraction, 
 
 > Can deep learning extract road networks from satellite imagery and identify spatial changes between two time periods?
 
+## Setup & Testing
+
+### Install dependencies
+
+```bash
+python -m pip install -r requirements-dev.txt
+```
+
+### Run automated tests
+
+```bash
+python -m pytest -q tests
+```
+
+The test suite validates model output shapes, model construction, the segmentation loss, and binary evaluation metrics. It does not require the research datasets or trained checkpoints.
+
+### Compile source files
+
+```bash
+python -m compileall -q src scripts tests
+```
+
+GitHub Actions runs the compilation check and test suite automatically on pushes and pull requests to `main`.
+
 ## Methodology
 
 ```text
