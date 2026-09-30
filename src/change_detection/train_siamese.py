@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.change_detection.dataset import LEVIRChangeDataset
 from src.change_detection.models import SiameseChangeNet
+from src.data.common import load_yaml
 
 
 def weighted_dice_bce_loss(
@@ -115,6 +116,7 @@ def run_epoch(
     device,
     training,
     threshold=0.15,
+    positive_weight=4.0,
 ):
     if training:
         model.train()
@@ -147,7 +149,7 @@ def run_epoch(
             loss = weighted_dice_bce_loss(
                 logits,
                 target,
-                positive_weight=4.0,
+                positive_weight=positive_weight,
             )
 
             if training:
@@ -220,8 +222,12 @@ def main():
     parser = argparse.ArgumentParser(description="Train the Siamese change detection model.")
     parser.parse_args()
 
+    config = load_yaml("configs/change_detection.yaml")
+    data_config = config["data"]
+    training_config = config["training"]
+    output_config = config["outputs"]
 
-    torch.manual_seed(42)
+    torch.manual_seed(config["seed"])
 
     device = torch.device(
         "cuda"
@@ -233,48 +239,50 @@ def main():
 
     train_dataset = LEVIRChangeDataset(
         split="train",
-        size=256,
+        size=data_config["image_size"],
         train=True,
+        root=data_config["root"],
     )
 
     val_dataset = LEVIRChangeDataset(
         split="val",
-        size=256,
+        size=data_config["image_size"],
         train=False,
+        root=data_config["root"],
     )
 
     train_loader = DataLoader(
         train_dataset,
-        batch_size=2,
+        batch_size=training_config["batch_size"],
         shuffle=True,
-        num_workers=0,
+        num_workers=training_config["num_workers"],
     )
 
     val_loader = DataLoader(
         val_dataset,
-        batch_size=2,
+        batch_size=training_config["batch_size"],
         shuffle=False,
-        num_workers=0,
+        num_workers=training_config["num_workers"],
     )
 
     model = SiameseChangeNet().to(device)
 
     optimizer = torch.optim.AdamW(
         model.parameters(),
-        lr=1e-4,
-        weight_decay=1e-5,
+        lr=training_config["lr"],
+        weight_decay=training_config["weight_decay"],
     )
 
-    epochs = 6
+    epochs = training_config["epochs"]
 
-    evaluation_threshold = 0.15
+    evaluation_threshold = training_config["threshold"]
 
     output_dir = Path(
-        "outputs/checkpoints"
+        output_config["checkpoint_dir"]
     )
 
     metrics_dir = Path(
-        "outputs/metrics"
+        output_config["metrics_dir"]
     )
 
     output_dir.mkdir(
@@ -305,7 +313,7 @@ def main():
     )
 
     print(
-        "Positive-class weight: 4.0"
+        "Positive-class weight:", training_config["positive_weight"]
     )
 
     print(
@@ -327,6 +335,7 @@ def main():
             device,
             training=True,
             threshold=evaluation_threshold,
+            positive_weight=training_config["positive_weight"],
         )
 
         with torch.no_grad():
@@ -338,6 +347,7 @@ def main():
                 device,
                 training=False,
                 threshold=evaluation_threshold,
+                positive_weight=training_config["positive_weight"],
             )
 
         epoch_time = (
@@ -350,7 +360,7 @@ def main():
             "train": train_metrics,
             "val": val_metrics,
             "threshold": evaluation_threshold,
-            "positive_weight": 4.0,
+            "positive_weight": training_config["positive_weight"],
             "epoch_seconds": epoch_time,
         }
 
@@ -383,7 +393,7 @@ def main():
                     "epoch": epoch,
                     "val_iou": best_iou,
                     "threshold": evaluation_threshold,
-                    "positive_weight": 4.0,
+                    "positive_weight": training_config["positive_weight"],
                 },
                 output_dir
                 / "siamese_change_weighted.pt",

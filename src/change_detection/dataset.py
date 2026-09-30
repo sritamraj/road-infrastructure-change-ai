@@ -8,8 +8,8 @@ from torch.utils.data import Dataset
 
 
 class LEVIRChangeDataset(Dataset):
-    def __init__(self, split="train", size=256, train=False):
-        self.root = Path("data/raw/levir_cd") / split
+    def __init__(self, split="train", size=256, train=False, root="data/raw/levir_cd"):
+        self.root = Path(root) / split
 
         self.a_dir = self.root / "A"
         self.b_dir = self.root / "B"
