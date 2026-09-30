@@ -171,7 +171,7 @@ Medium experiment:
 * 2 epochs
 * Learning rate: 1e-4
 
-The best validation IoU from this baseline experiment was approximately **0.1871**.
+The best validation IoU from this baseline experiment was **0.2007**.
 
 Implemented metrics:
 
@@ -248,19 +248,19 @@ The final evaluation used the 128-image LEVIR-CD test split.
 
 | Metric    | Result |
 | --------- | -----: |
-| Precision | 0.3078 |
-| Recall    | 0.4460 |
-| Dice / F1 | 0.3642 |
-| IoU       | 0.2226 |
+| Precision | 0.3057 |
+| Recall    | 0.4526 |
+| Dice / F1 | 0.3649 |
+| IoU       | 0.2232 |
 
 Confusion counts:
 
 | Quantity       |    Pixels |
 | -------------- | --------: |
-| True Positive  |   190,529 |
-| True Negative  | 7,532,852 |
-| False Positive |   428,524 |
-| False Negative |   236,703 |
+| True Positive  |   193,352 |
+| True Negative  | 7,522,202 |
+| False Positive |   439,174 |
+| False Negative |   233,880 |
 
 These results describe change detection on LEVIR-CD and should not be interpreted as road-construction accuracy.
 

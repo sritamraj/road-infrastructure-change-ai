@@ -1,92 +1,60 @@
+import argparse
+import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+import albumentations as A
 import numpy as np
-import matplotlib.pyplot as plt
+import torch
 from PIL import Image
 
-
-IMAGE_PATH = Path(
-    "data/raw/deepglobe/train/images/142436_sat.jpg"
-)
-
-GT_PATH = Path(
-    "data/raw/deepglobe/train/masks/142436_mask.png"
-)
-
-PRED_PATH = Path(
-    "outputs/predictions/142436_pred.png"
-)
-
-OUTPUT_PATH = Path(
-    "outputs/predictions/142436_segmentation_result.png"
-)
+from src.segmentation.models import build_model
 
 
-image = np.array(
-    Image.open(IMAGE_PATH).convert("RGB")
-)
+def main():
+    parser = argparse.ArgumentParser(description='Run U-Net road segmentation inference.')
+    parser.add_argument('--image', default='data/raw/deepglobe/train/images/142436_sat.jpg')
+    parser.add_argument('--output', default='outputs/predictions/142436_pred.png')
+    parser.add_argument('--checkpoint', default='outputs/checkpoints/unet_best.pt')
+    parser.add_argument('--size', type=int, default=256)
+    parser.add_argument('--threshold', type=float, default=0.5)
+    args = parser.parse_args()
 
-gt_rgb = np.array(
-    Image.open(GT_PATH).convert("RGB")
-)
+    image_path = Path(args.image)
+    output_path = Path(args.output)
+    checkpoint_path = Path(args.checkpoint)
 
-gt = np.all(
-    gt_rgb == 255,
-    axis=2,
-)
+    image = np.array(Image.open(image_path).convert('RGB'))
+    original_size = (image.shape[1], image.shape[0])
 
-pred = np.array(
-    Image.open(PRED_PATH).convert("L")
-) > 127
+    transform = A.Compose([
+        A.Resize(height=args.size, width=args.size, interpolation=1),
+        A.Normalize(),
+    ])
+    transformed = transform(image=image)
+    tensor = torch.from_numpy(transformed['image'].transpose(2, 0, 1)).float().unsqueeze(0)
 
+    model = build_model('unet')
+    checkpoint = torch.load(checkpoint_path, map_location='cpu', weights_only=False)
+    model.load_state_dict(checkpoint['model'])
+    model.eval()
 
-fig, axes = plt.subplots(
-    1,
-    4,
-    figsize=(20, 5),
-)
+    with torch.no_grad():
+        probability = torch.sigmoid(model(tensor))[0, 0].numpy()
 
+    prediction = (probability >= args.threshold).astype(np.uint8) * 255
+    prediction = np.array(Image.fromarray(prediction).resize(original_size, Image.Resampling.NEAREST))
 
-axes[0].imshow(image)
-axes[0].set_title("Satellite Image")
-axes[0].axis("off")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    Image.fromarray(prediction).save(output_path)
 
-
-axes[1].imshow(gt, cmap="gray")
-axes[1].set_title("Ground Truth Road Mask")
-axes[1].axis("off")
-
-
-axes[2].imshow(pred, cmap="gray")
-axes[2].set_title("U-Net Prediction")
-axes[2].axis("off")
-
-
-overlay = image.copy()
-
-overlay[pred] = (
-    0.5 * overlay[pred]
-    + 0.5 * np.array([255, 0, 0])
-).astype(np.uint8)
-
-axes[3].imshow(overlay)
-axes[3].set_title("Prediction Overlay")
-axes[3].axis("off")
+    print(f'Image: {image_path}')
+    print(f'Checkpoint: {checkpoint_path}')
+    print(f'Output: {output_path}')
+    print(f'Prediction road pixels: {int(np.count_nonzero(prediction))}')
+    print('U-NET PREDICTION COMPLETE')
 
 
-plt.tight_layout()
-
-OUTPUT_PATH.parent.mkdir(
-    parents=True,
-    exist_ok=True,
-)
-
-plt.savefig(
-    OUTPUT_PATH,
-    dpi=200,
-    bbox_inches="tight",
-)
-
-plt.close()
-
-print(f"Saved: {OUTPUT_PATH}")
+if __name__ == '__main__':
+    main()

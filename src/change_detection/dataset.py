@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 
 class LEVIRChangeDataset(Dataset):
     def __init__(self, split="train", size=256, train=False, root="data/raw/levir_cd"):
-        self.root = Path(root) / split
+        base = Path(root); self.root = base / split if (base / split / "A").exists() else base
 
         self.a_dir = self.root / "A"
         self.b_dir = self.root / "B"
@@ -19,6 +19,7 @@ class LEVIRChangeDataset(Dataset):
             p.stem
             for p in self.a_dir.iterdir()
             if p.suffix.lower() in {".png", ".jpg", ".jpeg"}
+            and p.stem.startswith(f"{split}_")
         )
 
         transforms = [
