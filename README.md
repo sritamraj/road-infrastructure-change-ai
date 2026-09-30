@@ -95,6 +95,62 @@ Used for the paired temporal change-detection component.
 
 **Important:** LEVIR-CD is a building-change dataset, not a road-change dataset. Therefore, its results validate the temporal change-detection component rather than proving road-construction detection.
 
+## Dataset Setup
+
+The research datasets are not included in this repository because of dataset distribution and storage constraints. Download them from their official dataset sources and place the extracted files in the following local structure.
+
+### DeepGlobe Road Extraction
+
+Expected layout:
+
+```text
+data/raw/deepglobe/train/
++-- images/
+|   +-- <sample_id>_sat.jpg
++-- masks/
+    +-- <sample_id>_mask.png
+```
+
+The repository already includes reproducible split files under `data/splits/deepglobe/`:
+
+* `train.txt` / `val.txt` - full 4,000 / 1,000 split
+* `train_500.txt` / `val_100.txt` - medium experiment
+* `train_small.txt` / `val_small.txt` - small smoke-test split
+
+The segmentation configuration uses the medium split by default.
+
+### LEVIR-CD
+
+Expected layout:
+
+```text
+data/raw/levir_cd/
++-- train/
+|   +-- A/
+|   +-- B/
+|   +-- label/
++-- val/
+|   +-- A/
+|   +-- B/
+|   +-- label/
++-- test/
+    +-- A/
+    +-- B/
+    +-- label/
+```
+
+The change-detection configuration expects this directory as `data/raw/levir_cd`.
+
+### Dataset verification
+
+Before running training, verify that the expected dataset directories exist locally. The automated test suite does not require these research datasets.
+
+```bash
+python -m pytest -q tests
+```
+
+Training should only be started after the corresponding dataset files and split lists are available.
+
 ## Road Segmentation
 
 A baseline U-Net was implemented using:
