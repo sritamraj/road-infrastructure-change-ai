@@ -9,10 +9,15 @@ PROJECT = Path("data/raw/deepglobe/train")
 OUTPUT = Path("outputs/dataset_check")
 OUTPUT.mkdir(parents=True, exist_ok=True)
 
-image_path = next((PROJECT / "images").glob("*_sat.jpg"))
+image_files = sorted((PROJECT / "images").glob("*_sat.jpg"))
+if not image_files:
+    raise SystemExit(f"DeepGlobe dataset not found. Expected images under: {PROJECT / "images"}")
+image_path = image_files[0]
 
 sample_id = image_path.stem.replace("_sat", "")
 mask_path = PROJECT / "masks" / f"{sample_id}_mask.png"
+if not mask_path.exists():
+    raise SystemExit(f"Mask not found for sample {sample_id}: {mask_path}")
 
 image = np.array(Image.open(image_path).convert("RGB"))
 mask_rgb = np.array(Image.open(mask_path).convert("RGB"))
